@@ -1,8 +1,9 @@
 import logging
 
 from threading import Lock, current_thread
+from functools import wraps
 
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for
 from structlog import get_logger
 
 logging.basicConfig(
@@ -41,6 +42,12 @@ class BusinessMutex:
     def is_locked(self) -> bool:
         return self.lock.locked()
 
+# Registered tokens
+TOKENS = {
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMSJ9.UbKAsZGwbMcFBGMVXhAfg4WL4Lac-nhVZ4jegPtNlW0": "business-1",
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMiJ9.kzo-UvtHH9E1NhX12W11nMrK2lkJ0OkREd_c1RIgkgU": "business-2",
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMyJ9.MxBz8eYS-HDI9PvSoCOXmtgUXoKs5PA4_JyZXvD8oQw": "business-3"
+}
 
 app = Flask(__name__)
 log = get_logger()
@@ -50,9 +57,32 @@ accounts = {}
 operation_number = ThreadSafeCounter()
 
 
+def token_required(f):
+    """Decorator used to validate routes that can only be accessed with a
+    valid token.
+
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Checks if the token is in the token list
+        if request.headers["Authorization"] not in TOKENS:
+            return {"data": -1}, 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route("/lock", methods=("PUT", "DELETE"))
+@token_required
 def lock_route():
     operation_number.increment()
+    authorization_token = request.headers["Authorization"]
+    if authorization_token not in TOKENS:
+        log.error("Unauthorized request",
+                  token=authorization_token,
+                  thread_name=current_thread().name,
+                  operation_number=operation_number.counter)
+        return {"data": -1}, 401
+
     # Check if the payload is empty
     if not request.json:
         # TODO Fix payload response
@@ -155,6 +185,7 @@ def process_account_lock(data):
         return {"data": -1}
 
 @app.route("/balace", methods=("GET", "PUT"))
+@token_required
 def balance_route():
     return
 
