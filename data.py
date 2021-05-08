@@ -1,6 +1,6 @@
 import logging
 
-from threading import Lock
+from threading import Lock, current_thread
 
 from flask import Flask, request
 from structlog import get_logger
@@ -11,23 +11,58 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
+class ThreadSafeCounter:
+    """A thread safe counter used to register the operation number."""
+    def __init__(self):
+        self.counter = 0
+        self.lock = Lock()
+
+    def increment(self):
+        self.lock.acquire(timeout=10)
+        self.counter += 1
+        self.lock.release()
+
+
+class BusinessMutex:
+    """Mutex used to store the business id, used by the business server,
+    and a exclusive lock used for updating the user balance.
+
+    """
+    def __init__(self, business_id: int):
+        self.business_id = business_id
+        self.lock = Lock()
+
+    def acquire(self) -> bool:
+        return self.lock.acquire(timeout=1)
+
+    def release(self):
+        self.lock.release()
+
+    def is_locked(self) -> bool:
+        return self.lock.locked()
+
+
 app = Flask(__name__)
 log = get_logger()
 
 write_mutex = {}
-acounts = {}
+accounts = {}
+operation_number = ThreadSafeCounter()
 
 
 @app.route("/lock", methods=("PUT", "DELETE"))
 def lock_route():
+    operation_number.increment()
     # Check if the payload is empty
     if not request.json:
         # TODO Fix payload response
-        log.error("Empty payload")
-        return {}, 400
+        log.error("Empty payload",
+                  thread_name=current_thread().name,
+                  operation_number=operation_number.counter)
+        return {"data": -1}, 400
 
     data = request.json
-    if request.method == "POST":
+    if request.method == "PUT":
         return process_account_lock(data)
 
     return process_account_unlock(data)
@@ -37,14 +72,41 @@ def process_account_unlock(data):
     # TODO Validate business id
     business_id = data["id_negoc"]
     account = data["conta"]
-    log.info("Acquiring lock",
-             id_negoc=business_id,
-             conta=account)
+    log.info("Releasing lock",
+             business_id=business_id,
+             account=account,
+             operation_name="unlock",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
     try:
-        write_mutex.setdefault(account, Lock())
-        write_mutex[account].release()
+        write_mutex.setdefault(account, BusinessMutex(business_id))
+        mutex = write_mutex[account]
+        if mutex.business_id != business_id:
+            log.error("Account is locked by a differente business server",
+                      business_id=business_id,
+                      business_id_with_lock=mutex.business_id,
+                      account=account,
+                      operation_name="lock",
+                      operation_number=operation_number.counter,
+                      thread_name=current_thread().name)
+            return {"data": -1}
+
+        mutex.release()
+        log.info("Lock released",
+                 business_id=business_id,
+                 account=account,
+                 operation_name="unlock",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
         return {"data": 1}
     except RuntimeError:
+        log.error("Lock already released",
+                  business_id=business_id,
+                  account=account,
+                  operation_name="unlock",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
         return {"data": -1}
 
 
@@ -53,15 +115,43 @@ def process_account_lock(data):
     business_id = data["id_negoc"]
     account = data["conta"]
 
-    write_mutex.setdefault(account, Lock())
+    write_mutex.setdefault(account, BusinessMutex(business_id))
     mutex = write_mutex[account]
-    if mutex.locked():
+    if mutex.business_id != business_id:
+        log.error("Account is already locked, by a differente business server",
+                  business_id=business_id,
+                  business_id_with_lock=mutex.business_id,
+                  account=account,
+                  operation_name="lock",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
         return {"data": -1}
 
-    locked = mutex.acquire(timeout = 1)
+    if mutex.is_locked():
+        log.error("Account is already locked",
+                  business_id=business_id,
+                  account=account,
+                  operation_name="lock",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
+        return {"data": -1}
+
+    locked = mutex.acquire()
     if locked:
+        log.info("Lock acquired successfully",
+                  business_id=business_id,
+                  account=account,
+                  operation_name="lock",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
         return {"data": 1}
     else:
+        log.error("Account is already locked, timeout exceeded",
+                  business_id=business_id,
+                  account=account,
+                  operation_name="lock",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
         return {"data": -1}
 
 @app.route("/balace", methods=("GET", "PUT"))
