@@ -42,6 +42,7 @@ class BusinessMutex:
     def is_locked(self) -> bool:
         return self.lock.locked()
 
+
 # Registered tokens
 TOKENS = {
     "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMSJ9.UbKAsZGwbMcFBGMVXhAfg4WL4Lac-nhVZ4jegPtNlW0": "business-1",
@@ -54,6 +55,9 @@ log = get_logger()
 
 write_mutex = {}
 accounts = {}
+for i in range(1, 11):
+    accounts.setdefault(i, 1000)
+
 operation_number = ThreadSafeCounter()
 
 
@@ -65,7 +69,7 @@ def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Checks if the token is in the token list
-        if request.headers["Authorization"] not in TOKENS:
+        if request.headers.get("Authorization") not in TOKENS:
             return {"data": -1}, 401
         return f(*args, **kwargs)
     return decorated_function
@@ -75,13 +79,6 @@ def token_required(f):
 @token_required
 def lock_route():
     operation_number.increment()
-    authorization_token = request.headers["Authorization"]
-    if authorization_token not in TOKENS:
-        log.error("Unauthorized request",
-                  token=authorization_token,
-                  thread_name=current_thread().name,
-                  operation_number=operation_number.counter)
-        return {"data": -1}, 401
 
     # Check if the payload is empty
     if not request.json:
@@ -100,8 +97,8 @@ def lock_route():
 
 def process_account_unlock(data):
     # TODO Validate business id
-    business_id = data["id_negoc"]
-    account = data["conta"]
+    business_id = int(data["id_negoc"])
+    account = int(data["conta"])
     log.info("Releasing lock",
              business_id=business_id,
              account=account,
@@ -120,7 +117,7 @@ def process_account_unlock(data):
                       operation_name="lock",
                       operation_number=operation_number.counter,
                       thread_name=current_thread().name)
-            return {"data": -1}
+            return {"data": -1}, 403
 
         mutex.release()
         log.info("Lock released",
@@ -142,20 +139,20 @@ def process_account_unlock(data):
 
 def process_account_lock(data):
     # TODO Validate business id
-    business_id = data["id_negoc"]
-    account = data["conta"]
+    business_id = int(data["id_negoc"])
+    account = int(data["conta"])
 
     write_mutex.setdefault(account, BusinessMutex(business_id))
     mutex = write_mutex[account]
     if mutex.business_id != business_id:
-        log.error("Account is already locked, by a differente business server",
+        log.error("Account is already locked by a differente business server",
                   business_id=business_id,
                   business_id_with_lock=mutex.business_id,
                   account=account,
                   operation_name="lock",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}
+        return {"data": -1}, 403
 
     if mutex.is_locked():
         log.error("Account is already locked",
@@ -184,10 +181,90 @@ def process_account_lock(data):
                   thread_name=current_thread().name)
         return {"data": -1}
 
-@app.route("/balace", methods=("GET", "PUT"))
+@app.route("/balance/<int:business_id>/<int:account>", methods=("GET", "PUT"))
 @token_required
-def balance_route():
-    return
+def balance_route(business_id, account):
+    operation_number.increment()
+    if request.method == "GET":
+        return get_balance(business_id, account)
+    else:
+        amount = float(request.json["valor"])
+        return update_balance(business_id, account,  amount)
+
+def get_balance(business_id, account):
+    log.info("Fetching account balance",
+             business_id=business_id,
+             account=account,
+             operation_name="get_balance",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
+    balance = accounts.get(account)
+    if balance:
+        log.info("Found account balance",
+                 business_id=business_id,
+                 account=account,
+                 operation_name="get_balance",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
+        return {"balance": balance}
+    else:
+        print(accounts)
+        log.error("Account not found",
+                 business_id=business_id,
+                 account=account,
+                 operation_name="get_balance",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
+        return {"data": -1}, 404
+
+def update_balance(business_id, account, amount):
+    log.info("Updating account balance",
+             business_id=business_id,
+             account=account,
+             operation_name="update_balance",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
+    mutex = write_mutex.get(account)
+    if not mutex:
+        log.error("Account is not locked by any server",
+                  business_id=business_id,
+                  business_id_with_lock=mutex.business_id,
+                  account=account,
+                  operation_name="update_balance",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
+        return {"data": -1}, 403
+
+    if mutex.business_id != business_id:
+        log.error("Account is already locked by a differente business server",
+                  business_id=business_id,
+                  business_id_with_lock=mutex.business_id,
+                  account=account,
+                  operation_name="update_balance",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
+        return {"data": -1}, 403
+
+    balance = accounts.get(account)
+    if balance:
+        accounts[account] = amount
+        log.info("Account balance updated successfully",
+                 business_id=business_id,
+                 account=account,
+                 operation_name="update_balance",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
+        return {"data": 1}
+    else:
+        log.error("Account not found",
+                 business_id=business_id,
+                 account=account,
+                 operation_name="update_balance",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
+        return {"data": -1}, 404
 
 
 if __name__ == "__main__":
