@@ -3,7 +3,7 @@ import logging
 from threading import Lock, current_thread
 from functools import wraps
 
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request
 from structlog import get_logger
 
 logging.basicConfig(
