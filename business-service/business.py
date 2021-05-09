@@ -27,6 +27,20 @@ class ThreadSafeCounter:
         self.lock.release()
 
 
+def token_required(f):
+    """Decorator used to validate routes that can only be accessed with a
+    valid token.
+
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Checks if the token is in the token list
+        if request.headers.get("Authorization") not in TOKENS:
+            return {"data": -1}, 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 TOKENS = {
     "": "client-1",
     "": "client-2",
