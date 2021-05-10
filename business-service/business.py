@@ -201,6 +201,12 @@ def balance_route(account: int):
 
     """
     operation_number.increment()
+    log.info("Fetching balance",
+             business_id=client.business_id,
+             account=account,
+             operation_name="fetch_balance",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
     try:
         return client.fetch_account_balance(account)
     except Exception:
@@ -336,6 +342,7 @@ def transfer(debit_account: int, credit_account: int, amount: float):
              operation_name="transfer",
              operation_number=operation_number.counter,
              thread_name=current_thread().name)
+
     # Get lock on both accounts
     client.acquire_lock(debit_account)
     client.acquire_lock(credit_account)
@@ -351,6 +358,7 @@ def transfer(debit_account: int, credit_account: int, amount: float):
     # Unlock both accounts
     client.release_lock(debit_account)
     client.release_lock(credit_account)
+
     log.info("Transfer finished successfully",
              business_id=client.business_id,
              debit_account=debit_account,
@@ -369,10 +377,14 @@ def queue_consumer():
 def process_operations_queue():
     queue_size = operations_queue.size()
     if queue_size != 5:
-        log.info("Queue not filled yet", queue_size=queue_size)
+        log.info("Queue not filled yet",
+                 queue_size=queue_size,
+                 operation_name="background_operation_processor",
+                 thread_name=current_thread().name)
         time.sleep(1)
         return
 
+    # Process five operations on the queue.
     for i in range(5):
         operation = operations_queue.pop()
         if operation["operation_name"] == "deposit":
@@ -387,6 +399,10 @@ def process_operations_queue():
             )
 
 if __name__ == "__main__":
-    consumer_thread = Thread(target=queue_consumer)
+    consumer_thread = Thread(
+        name="Operations-Consumer-Thread",
+        target=queue_consumer
+    )
+    # Initialize the background job for the operations queue.
     consumer_thread.start()
     app.run(port=5001)
