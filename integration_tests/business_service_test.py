@@ -48,7 +48,7 @@ def test_deposit_account_with_valid_token():
         headers=headers)
 
     assert response.status_code == 200
-    assert response.json()["balance"] == 1010
+    assert response.json()["balance"] == 1000
 
 
 def test_withdraw_account_with_valid_token():
@@ -70,7 +70,7 @@ def test_withdraw_account_with_valid_token():
         headers=headers)
 
     assert response.status_code == 200
-    assert response.json()["balance"] == 900
+    assert response.json()["balance"] == 1000
 
 
 def test_transfer_between_accounts_with_valid_token():
@@ -96,11 +96,11 @@ def test_transfer_between_accounts_with_valid_token():
         headers=headers)
 
     assert response.status_code == 200
-    assert response.json()["balance"] == 900
+    assert response.json()["balance"] == 1000
 
     response = requests.get("http://localhost:5001/balance/{}".format(
         credit_account),
         headers=headers)
 
     assert response.status_code == 200
-    assert response.json()["balance"] == 1100
+    assert response.json()["balance"] == 1000
