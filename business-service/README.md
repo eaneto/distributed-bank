@@ -14,17 +14,17 @@ expôr a API de operações do banco. As possíveis operações são:
 
 ## Consulta de saldo
 
-![Diagrama da Funcionalidade](Diagrams-ServidorDeNegocio-ConsultaDeSaldo.png)
+![Diagrama da Funcionalidade](../docs/Diagrams-ServidorDeNegocio-ConsultaDeSaldo.png)
 
 ## Depósito
 
-![Diagrama da Funcionalidade](Diagrams-ServidorDeNegocio-Deposito.png)
+![Diagrama da Funcionalidade](../docs/Diagrams-ServidorDeNegocio-Deposito.png)
 
 ## Saque
 
-![Diagrama da Funcionalidade](Diagrams-ServidorDeNegocio-Saque.png)
+![Diagrama da Funcionalidade](../docs/Diagrams-ServidorDeNegocio-Saque.png)
 
 ## Transferência
 
-![Diagrama da Funcionalidade](Diagrams-ServidorDeNegocio-Transferencia.png)
+![Diagrama da Funcionalidade](../docs/Diagrams-ServidorDeNegocio-Transferencia.png)
 
