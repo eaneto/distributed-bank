@@ -370,12 +370,25 @@ def transfer(debit_account: int, credit_account: int, amount: float):
 
 
 def queue_consumer():
+    """The operations queue consumer.
+
+    An infinite loop that processes the operations queue.
+
+    """
     while True:
         process_operations_queue()
 
 
 def process_operations_queue():
+    """Processes the operations queue.
+
+    The queue can only be processed when it has at least 5 messages,
+    otherwise no operations will be processed.
+
+    """
     queue_size = operations_queue.size()
+    # If there are less than five messages just ignore and
+    # sleep for one second.
     if queue_size != 5:
         log.info("Queue not filled yet",
                  queue_size=queue_size,
@@ -386,7 +399,9 @@ def process_operations_queue():
 
     # Process five operations on the queue.
     for i in range(5):
+        # Removes the message from the queue and return it
         operation = operations_queue.pop()
+        # Do the specific operation given the operation name
         if operation["operation_name"] == "deposit":
             deposit(operation["account"], operation["amount"])
         elif operation["operation_name"] == "withdraw":
