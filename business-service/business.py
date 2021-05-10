@@ -83,7 +83,6 @@ class DataServiceClient:
         }
 
     def acquire_lock(self, account: int):
-        # TODO logs
         payload = {
             "id_negoc": self.business_id,
             "conta": account
@@ -106,7 +105,6 @@ class DataServiceClient:
             raise Exception("Error acquiring lock")
 
     def release_lock(self, account: int):
-        # TODO logs
         payload = {
             "id_negoc": self.business_id,
             "conta": account
@@ -129,7 +127,6 @@ class DataServiceClient:
             raise Exception("Error releasing lock")
 
     def fetch_account_balance(self, account: int):
-        # TODO logs
         response = requests.get(
             self.url + "/balance/{}/{}".format(self.business_id, account),
             headers=self.headers
@@ -149,7 +146,6 @@ class DataServiceClient:
         return response.json()
 
     def update_account_balance(self, account: int, amount: float):
-        # TODO logs
         response = requests.put(
             self.url + "/balance/{}/{}".format(self.business_id, account),
             headers=self.headers,
@@ -187,6 +183,13 @@ def balance_route(account: int):
 @token_required
 def deposit_route(account: int, amount: float):
     operation_number.increment()
+    log.info("Initiating deposit",
+             business_id=client.business_id,
+             account=account,
+             amount=amount,
+             operation_name="deposit",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
     try:
         # Get lock
         client.acquire_lock(account)
@@ -198,6 +201,13 @@ def deposit_route(account: int, amount: float):
         client.update_account_balance(account, new_balance)
         # Unlock account
         client.release_lock(account)
+        log.info("Deposit finished successfully",
+                 business_id=client.business_id,
+                 account=account,
+                 amount=amount,
+                 operation_name="deposit",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
         return {}, 200
     except Exception as e:
         log.error(e)
@@ -208,6 +218,13 @@ def deposit_route(account: int, amount: float):
 @token_required
 def withdraw_route(account: int, amount: float):
     operation_number.increment()
+    log.info("Initiating withdraw",
+             business_id=client.business_id,
+             account=account,
+             amount=amount,
+             operation_name="withdraw",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
     try:
         # Get lock
         client.acquire_lock(account)
@@ -219,6 +236,13 @@ def withdraw_route(account: int, amount: float):
         client.update_account_balance(account, new_balance)
         # Unlock account
         client.release_lock(account)
+        log.info("Withdraw finished successfully",
+                 business_id=client.business_id,
+                 account=account,
+                 amount=amount,
+                 operation_name="withdraw",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
         return {}, 200
     except Exception as e:
         log.error(e)
@@ -229,6 +253,14 @@ def withdraw_route(account: int, amount: float):
 @token_required
 def transfer_route(debit_account: int, credit_account: int, amount: float):
     operation_number.increment()
+    log.info("Initiating transfer",
+             business_id=client.business_id,
+             debit_account=debit_account,
+             credit_account=credit_account,
+             amount=amount,
+             operation_name="transfer",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
     try:
         # Get lock on both accounts
         client.acquire_lock(debit_account)
@@ -245,6 +277,14 @@ def transfer_route(debit_account: int, credit_account: int, amount: float):
         # Unlock both accounts
         client.release_lock(debit_account)
         client.release_lock(credit_account)
+        log.info("Transfer finished successfully",
+                 business_id=client.business_id,
+                 debit_account=debit_account,
+                 credit_account=credit_account,
+                 amount=amount,
+                 operation_name="transfer",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
         return {}, 200
     except Exception as e:
         log.error(e)
