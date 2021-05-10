@@ -181,7 +181,7 @@ class DataServiceClient:
                       business_id=self.business_id,
                       account=account,
                       operation_name="update_account_balance",
-                      operation_number=operation_number.counter,
+                     operation_number=operation_number.counter,
                       thread_name=current_thread().name)
             raise Exception("Error updating account balance")
 
@@ -209,7 +209,7 @@ def balance_route(account: int):
              thread_name=current_thread().name)
     try:
         return client.fetch_account_balance(account)
-    except Exception:
+    except Exception as e:
         log.error(e)
         return {}, 500
 
