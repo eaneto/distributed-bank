@@ -2,8 +2,9 @@ import os
 import logging
 import requests
 import json
+import time
 
-from threading import Lock, current_thread
+from threading import Lock, current_thread, Thread
 from functools import wraps
 
 from flask import Flask, request
@@ -64,6 +65,27 @@ def get_env_or_default(env_key: str, default) -> str:
         return value
 
     return default
+
+
+class ThreadSafeQueue:
+    def __init__(self):
+        self.lock = Lock()
+        self.queue = []
+
+    def push(self, element):
+        self.lock.acquire(timeout=10)
+        self.queue.append(element)
+        self.lock.release()
+
+    def pop(self):
+        self.lock.acquire(timeout=10)
+        element = self.queue.pop()
+        self.lock.release()
+        return element
+
+    def size(self) -> int:
+        return len(self.queue)
+
 
 class DataServiceClient:
     """Stateless client for the data service.
@@ -167,10 +189,17 @@ class DataServiceClient:
 # One stateless shared instance
 client = DataServiceClient()
 
+# Queue used to store all operations
+operations_queue = ThreadSafeQueue()
 
 @app.route("/balance/<int:account>")
 @token_required
 def balance_route(account: int):
+    """Fetches the account balance.
+
+    This is the only operation that isn't queued.
+
+    """
     operation_number.increment()
     try:
         return client.fetch_account_balance(account)
@@ -183,6 +212,68 @@ def balance_route(account: int):
 @token_required
 def deposit_route(account: int, amount: float):
     operation_number.increment()
+    log.info("Publishing deposit to operations queue",
+             business_id=client.business_id,
+             account=account,
+             amount=amount,
+             operation_name="deposit",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
+    operations_queue.push({
+        "operation_name": "deposit",
+        "account": account,
+        "amount": amount
+    })
+
+    return {}, 200
+
+
+@app.route("/withdraw/<int:account>/<float:amount>", methods=["POST"])
+@token_required
+def withdraw_route(account: int, amount: float):
+    operation_number.increment()
+    log.info("Publishing withdraw to operations queue",
+             business_id=client.business_id,
+             account=account,
+             amount=amount,
+             operation_name="withdraw",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
+    operations_queue.push({
+        "operation_name": "withdraw",
+        "account": account,
+        "amount": amount
+    })
+
+    return {}, 200
+
+
+@app.route("/transfer/<int:debit_account>/<int:credit_account>/<float:amount>",
+           methods=["POST"])
+@token_required
+def transfer_route(debit_account: int, credit_account: int, amount: float):
+    operation_number.increment()
+    log.info("Publishing transfer to operations queue",
+             business_id=client.business_id,
+             debit_account=debit_account,
+             credit_account=credit_account,
+             amount=amount,
+             operation_name="transfer",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
+    operations_queue.push({
+        "operation_name": "transfer",
+        "debit_account": debit_account,
+        "credit_account": credit_account,
+        "amount": amount
+    })
+
+    return {}, 200
+
+def deposit(account: int, amount: float):
     log.info("Initiating deposit",
              business_id=client.business_id,
              account=account,
@@ -190,34 +281,26 @@ def deposit_route(account: int, amount: float):
              operation_name="deposit",
              operation_number=operation_number.counter,
              thread_name=current_thread().name)
-    try:
-        # Get lock
-        client.acquire_lock(account)
-        # Get account balance
-        account_balance = client.fetch_account_balance(account)
-        # Calculate new balance
-        new_balance = float(account_balance["balance"]) + amount
-        # Update balance amount
-        client.update_account_balance(account, new_balance)
-        # Unlock account
-        client.release_lock(account)
-        log.info("Deposit finished successfully",
-                 business_id=client.business_id,
-                 account=account,
-                 amount=amount,
-                 operation_name="deposit",
-                 operation_number=operation_number.counter,
-                 thread_name=current_thread().name)
-        return {}, 200
-    except Exception as e:
-        log.error(e)
-        return {}, 500
+    # Get lock
+    client.acquire_lock(account)
+    # Get account balance
+    account_balance = client.fetch_account_balance(account)
+    # Calculate new balance
+    new_balance = float(account_balance["balance"]) + amount
+    # Update balance amount
+    client.update_account_balance(account, new_balance)
+    # Unlock account
+    client.release_lock(account)
+    log.info("Deposit finished successfully",
+             business_id=client.business_id,
+             account=account,
+             amount=amount,
+             operation_name="deposit",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
 
 
-@app.route("/withdraw/<int:account>/<float:amount>", methods=["POST"])
-@token_required
-def withdraw_route(account: int, amount: float):
-    operation_number.increment()
+def withdraw(account: int, amount:float):
     log.info("Initiating withdraw",
              business_id=client.business_id,
              account=account,
@@ -225,34 +308,26 @@ def withdraw_route(account: int, amount: float):
              operation_name="withdraw",
              operation_number=operation_number.counter,
              thread_name=current_thread().name)
-    try:
-        # Get lock
-        client.acquire_lock(account)
-        # Get account balance
-        account_balance = client.fetch_account_balance(account)
-        # Calculate new balance
-        new_balance = float(account_balance["balance"]) - amount
-        # Update balance amount
-        client.update_account_balance(account, new_balance)
-        # Unlock account
-        client.release_lock(account)
-        log.info("Withdraw finished successfully",
-                 business_id=client.business_id,
-                 account=account,
-                 amount=amount,
-                 operation_name="withdraw",
-                 operation_number=operation_number.counter,
-                 thread_name=current_thread().name)
-        return {}, 200
-    except Exception as e:
-        log.error(e)
-        return {}, 500
 
+    # Get lock
+    client.acquire_lock(account)
+    # Get account balance
+    account_balance = client.fetch_account_balance(account)
+    # Calculate new balance
+    new_balance = float(account_balance["balance"]) - amount
+    # Update balance amount
+    client.update_account_balance(account, new_balance)
+    # Unlock account
+    client.release_lock(account)
+    log.info("Withdraw finished successfully",
+             business_id=client.business_id,
+             account=account,
+             amount=amount,
+             operation_name="withdraw",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
 
-@app.route("/transfer/<int:debit_account>/<int:credit_account>/<float:amount>", methods=["POST"])
-@token_required
-def transfer_route(debit_account: int, credit_account: int, amount: float):
-    operation_number.increment()
+def transfer(debit_account: int, credit_account: int, amount: float):
     log.info("Initiating transfer",
              business_id=client.business_id,
              debit_account=debit_account,
@@ -261,34 +336,57 @@ def transfer_route(debit_account: int, credit_account: int, amount: float):
              operation_name="transfer",
              operation_number=operation_number.counter,
              thread_name=current_thread().name)
-    try:
-        # Get lock on both accounts
-        client.acquire_lock(debit_account)
-        client.acquire_lock(credit_account)
-        # Get the accounts balances
-        debit_account_balance = client.fetch_account_balance(debit_account)
-        credit_account_balance = client.fetch_account_balance(credit_account)
-        # Calculate balance for both accounts
-        debit_balance = float(debit_account_balance["balance"]) - amount
-        credit_balance = float(credit_account_balance["balance"]) + amount
-        # Update balance amount to both accounts
-        client.update_account_balance(debit_account, debit_balance)
-        client.update_account_balance(credit_account, credit_balance)
-        # Unlock both accounts
-        client.release_lock(debit_account)
-        client.release_lock(credit_account)
-        log.info("Transfer finished successfully",
-                 business_id=client.business_id,
-                 debit_account=debit_account,
-                 credit_account=credit_account,
-                 amount=amount,
-                 operation_name="transfer",
-                 operation_number=operation_number.counter,
-                 thread_name=current_thread().name)
-        return {}, 200
-    except Exception as e:
-        log.error(e)
-        return {}, 500
+    # Get lock on both accounts
+    client.acquire_lock(debit_account)
+    client.acquire_lock(credit_account)
+    # Get the accounts balances
+    debit_account_balance = client.fetch_account_balance(debit_account)
+    credit_account_balance = client.fetch_account_balance(credit_account)
+    # Calculate balance for both accounts
+    debit_balance = float(debit_account_balance["balance"]) - amount
+    credit_balance = float(credit_account_balance["balance"]) + amount
+    # Update balance amount to both accounts
+    client.update_account_balance(debit_account, debit_balance)
+    client.update_account_balance(credit_account, credit_balance)
+    # Unlock both accounts
+    client.release_lock(debit_account)
+    client.release_lock(credit_account)
+    log.info("Transfer finished successfully",
+             business_id=client.business_id,
+             debit_account=debit_account,
+             credit_account=credit_account,
+             amount=amount,
+             operation_name="transfer",
+             operation_number=operation_number.counter,
+             thread_name=current_thread().name)
+
+
+def queue_consumer():
+    while True:
+        process_operations_queue()
+
+
+def process_operations_queue():
+    queue_size = operations_queue.size()
+    if queue_size != 5:
+        log.info("Queue not filled yet", queue_size=queue_size)
+        time.sleep(1)
+        return
+
+    for i in range(5):
+        operation = operations_queue.pop()
+        if operation["operation_name"] == "deposit":
+            deposit(operation["account"], operation["amount"])
+        elif operation["operation_name"] == "withdraw":
+            withdraw(operation["account"], operation["amount"])
+        elif operation["operation_name"] == "transfer":
+            transfer(
+                operation["debit_account"],
+                operation["credit_account"],
+                operation["amount"]
+            )
 
 if __name__ == "__main__":
+    consumer_thread = Thread(target=queue_consumer)
+    consumer_thread.start()
     app.run(port=5001)
