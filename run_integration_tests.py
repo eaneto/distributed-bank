@@ -6,7 +6,24 @@ source .venv/bin/activate
 export FLASK_APP=data-service/data.py
 flask run &
 
-cd integration_tests/ && pytest
+sleep 1
+
+pytest integration_tests/data_service_test.py
 
 # Destroy data service instance
 killall flask
+
+# Business Service
+python data-service/data.py &
+data_pid=$!
+
+python business-service/business.py &
+business_pid=$!
+
+sleep 1
+
+pytest integration_tests/business_service_test.py
+
+# Destroy service instances
+kill -9 $data_pid
+kill -9 $business_pid
