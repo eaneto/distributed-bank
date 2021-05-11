@@ -42,6 +42,7 @@ def test_acquire_lock_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
 def test_already_acquired_lock_with_valid_token():
     payload = {
@@ -56,6 +57,7 @@ def test_already_acquired_lock_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == -1
 
 def test_already_acquired_lock_by_different_server_with_valid_token():
     payload = {
@@ -70,6 +72,7 @@ def test_already_acquired_lock_by_different_server_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 403
+    assert response.json()["error"] == -1
 
 def test_unlock_with_valid_token():
     payload = {
@@ -84,6 +87,7 @@ def test_unlock_with_valid_token():
                                headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
 def test_unlock_locked_by_differente_server_with_valid_token():
     payload = {
@@ -98,6 +102,7 @@ def test_unlock_locked_by_differente_server_with_valid_token():
                                headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 403
+    assert response.json()["error"] == -1
 
 def test_get_balance_with_valid_token():
     headers = {
@@ -109,6 +114,7 @@ def test_get_balance_with_valid_token():
 
     assert response.status_code == 200
     assert response.json()["balance"] == 1000
+    assert response.json()["error"] == 0
 
 def test_get_balance_with_invalid_token():
     headers = {
@@ -119,6 +125,7 @@ def test_get_balance_with_invalid_token():
         headers=headers)
 
     assert response.status_code == 401
+    assert response.json()["error"] == -1
 
 def test_get_balance_lock_by_same_business_id_with_valid_token():
     business_id = 1
@@ -137,6 +144,7 @@ def test_get_balance_lock_by_same_business_id_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
     # When balance is fetched
     response = requests.get(
@@ -145,6 +153,7 @@ def test_get_balance_lock_by_same_business_id_with_valid_token():
 
     assert response.status_code == 200
     assert response.json()["balance"] == 1000
+    assert response.json()["error"] == 0
 
     # After unlock account
     response = requests.delete("http://localhost:5000/lock",
@@ -152,6 +161,7 @@ def test_get_balance_lock_by_same_business_id_with_valid_token():
                                data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
 def test_get_balance_lock_by_different_business_id_with_valid_token():
     business_id = 1
@@ -170,6 +180,7 @@ def test_get_balance_lock_by_different_business_id_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
     # When balance is fetched by differente business service
     response = requests.get(
@@ -178,6 +189,7 @@ def test_get_balance_lock_by_different_business_id_with_valid_token():
 
     assert response.status_code == 200
     assert response.json()["balance"] == 1000
+    assert response.json()["error"] == 0
 
     # After unlock account
     response = requests.delete("http://localhost:5000/lock",
@@ -185,24 +197,23 @@ def test_get_balance_lock_by_different_business_id_with_valid_token():
                                data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
 def test_update_balance_not_locked_with_valid_token():
-    payload = {
-        "id_negoc": 1,
-        "conta": 1,
-        "valor": 100
-    }
+    business_id = 1
+    account = 7
+    amount = 100.0
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMyJ9.MxBz8eYS-HDI9PvSoCOXmtgUXoKs5PA4_JyZXvD8oQw"
     }
 
     response = requests.put(
-        "http://localhost:5000/balance/{}/{}".format(payload["id_negoc"],
-                                                     payload["conta"]),
-        headers=headers, data=json.dumps(payload))
+        "http://localhost:5000/balance/{}/{}".format(business_id, account),
+        headers=headers, data=json.dumps({"valor": amount}))
 
-    assert response.status_code == 200
+    assert response.status_code == 403
+    assert response.json()["error"] == -1
 
 def test_update_balance_lock_by_different_business_id_with_valid_token():
     business_id = 1
@@ -221,6 +232,7 @@ def test_update_balance_lock_by_different_business_id_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
     # When balance is fetched by differente business service
     response = requests.put(
@@ -229,6 +241,7 @@ def test_update_balance_lock_by_different_business_id_with_valid_token():
         headers=headers)
 
     assert response.status_code == 403
+    assert response.json()["error"] == -1
 
     # After unlock account
     response = requests.delete("http://localhost:5000/lock",
@@ -236,6 +249,7 @@ def test_update_balance_lock_by_different_business_id_with_valid_token():
                                data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
 def test_update_balance_lock_by_same_business_id_with_valid_token():
     business_id = 1
@@ -255,6 +269,7 @@ def test_update_balance_lock_by_same_business_id_with_valid_token():
                             headers=headers, data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
     # When balance is updated by same business service
     response = requests.put(
@@ -263,6 +278,7 @@ def test_update_balance_lock_by_same_business_id_with_valid_token():
         headers=headers)
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
 
     # Then balance is updated to amount
     response = requests.get(
@@ -271,7 +287,7 @@ def test_update_balance_lock_by_same_business_id_with_valid_token():
 
     assert response.status_code == 200
     assert response.json()["balance"] == amount
-
+    assert response.json()["error"] == 0
 
     # After unlock account
     response = requests.delete("http://localhost:5000/lock",
@@ -279,3 +295,4 @@ def test_update_balance_lock_by_same_business_id_with_valid_token():
                                data=json.dumps(payload))
 
     assert response.status_code == 200
+    assert response.json()["error"] == 0
