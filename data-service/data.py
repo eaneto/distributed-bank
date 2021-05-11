@@ -4,13 +4,15 @@ from threading import Lock, current_thread
 from functools import wraps
 
 from flask import Flask, request
-from structlog import get_logger
+from structlog import get_logger, configure
+from structlog.stdlib import LoggerFactory
 
 logging.basicConfig(
     filename='data.log',
-    encoding='utf-8',
     level=logging.DEBUG
 )
+
+configure(logger_factory=LoggerFactory())
 
 class ThreadSafeCounter:
     """A thread safe counter used to register the operation number."""
