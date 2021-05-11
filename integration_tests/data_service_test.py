@@ -4,8 +4,8 @@ import requests
 
 def test_acquire_lock_without_token():
     payload = {
-        "id_negoc": 1,
-        "conta": 1
+        "business_id": 1,
+        "account": 1
     }
     headers={
         "Content-Type": "application/json"
@@ -17,8 +17,8 @@ def test_acquire_lock_without_token():
 
 def test_acquire_lock_with_invalid_token():
     payload = {
-        "id_negoc": 1,
-        "conta": 1
+        "business_id": 1,
+        "account": 1
     }
     headers = {
         "Content-Type": "application/json",
@@ -31,8 +31,8 @@ def test_acquire_lock_with_invalid_token():
 
 def test_acquire_lock_with_valid_token():
     payload = {
-        "id_negoc": 1,
-        "conta": 1
+        "business_id": 1,
+        "account": 1
     }
     headers = {
         "Content-Type": "application/json",
@@ -46,8 +46,8 @@ def test_acquire_lock_with_valid_token():
 
 def test_already_acquired_lock_with_valid_token():
     payload = {
-        "id_negoc": 1,
-        "conta": 1
+        "business_id": 1,
+        "account": 1
     }
     headers = {
         "Content-Type": "application/json",
@@ -61,8 +61,8 @@ def test_already_acquired_lock_with_valid_token():
 
 def test_already_acquired_lock_by_different_server_with_valid_token():
     payload = {
-        "id_negoc": 2,
-        "conta": 1
+        "business_id": 2,
+        "account": 1
     }
     headers = {
         "Content-Type": "application/json",
@@ -76,8 +76,8 @@ def test_already_acquired_lock_by_different_server_with_valid_token():
 
 def test_unlock_with_valid_token():
     payload = {
-        "id_negoc": 1,
-        "conta": 1
+        "business_id": 1,
+        "account": 1
     }
     headers = {
         "Content-Type": "application/json",
@@ -91,8 +91,8 @@ def test_unlock_with_valid_token():
 
 def test_unlock_locked_by_differente_server_with_valid_token():
     payload = {
-        "id_negoc": 2,
-        "conta": 1
+        "business_id": 2,
+        "account": 1
     }
     headers = {
         "Content-Type": "application/json",
@@ -131,8 +131,8 @@ def test_get_balance_lock_by_same_business_id_with_valid_token():
     business_id = 1
     account = 1
     payload = {
-        "id_negoc": business_id,
-        "conta": account
+        "business_id": business_id,
+        "account": account
     }
     headers = {
         "Content-Type": "application/json",
@@ -167,8 +167,8 @@ def test_get_balance_lock_by_different_business_id_with_valid_token():
     business_id = 1
     account = 1
     payload = {
-        "id_negoc": business_id,
-        "conta": account
+        "business_id": business_id,
+        "account": account
     }
     headers = {
         "Content-Type": "application/json",
@@ -219,8 +219,8 @@ def test_update_balance_lock_by_different_business_id_with_valid_token():
     business_id = 1
     account = 1
     payload = {
-        "id_negoc": business_id,
-        "conta": account
+        "business_id": business_id,
+        "account": account
     }
     headers = {
         "Content-Type": "application/json",
@@ -256,8 +256,8 @@ def test_update_balance_lock_by_same_business_id_with_valid_token():
     account = 1
     amount = 120
     payload = {
-        "id_negoc": business_id,
-        "conta": account
+        "business_id": business_id,
+        "account": account
     }
     headers = {
         "Content-Type": "application/json",

@@ -97,8 +97,8 @@ def lock_route():
 
 def process_account_unlock(data):
     # TODO Validate business id
-    business_id = int(data["id_negoc"])
-    account = int(data["conta"])
+    business_id = int(data["business_id"])
+    account = int(data["account"])
     log.info("Releasing lock",
              business_id=business_id,
              account=account,
@@ -139,8 +139,8 @@ def process_account_unlock(data):
 
 def process_account_lock(data):
     # TODO Validate business id
-    business_id = int(data["id_negoc"])
-    account = int(data["conta"])
+    business_id = int(data["business_id"])
+    account = int(data["account"])
 
     write_mutex.setdefault(account, BusinessMutex(business_id))
     mutex = write_mutex[account]

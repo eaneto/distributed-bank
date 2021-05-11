@@ -121,8 +121,8 @@ class DataServiceClient:
 
     def acquire_lock(self, account: int):
         payload = {
-            "id_negoc": self.business_id,
-            "conta": account
+            "business_id": self.business_id,
+            "account": account
         }
         response = requests.put(
             self.url + "/lock",
@@ -143,8 +143,8 @@ class DataServiceClient:
 
     def release_lock(self, account: int):
         payload = {
-            "id_negoc": self.business_id,
-            "conta": account
+            "business_id": self.business_id,
+            "account": account
         }
         response = requests.delete(
             self.url + "/lock",
