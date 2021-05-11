@@ -70,7 +70,7 @@ def token_required(f):
     def decorated_function(*args, **kwargs):
         # Checks if the token is in the token list
         if request.headers.get("Authorization") not in TOKENS:
-            return {"data": -1}, 401
+            return {"error": -1}, 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -86,7 +86,7 @@ def lock_route():
         log.error("Empty payload",
                   thread_name=current_thread().name,
                   operation_number=operation_number.counter)
-        return {"data": -1}, 400
+        return {"error": -1}, 400
 
     data = request.json
     if request.method == "PUT":
@@ -117,7 +117,7 @@ def process_account_unlock(data):
                       operation_name="lock",
                       operation_number=operation_number.counter,
                       thread_name=current_thread().name)
-            return {"data": -1}, 403
+            return {"error": -1}, 403
 
         mutex.release()
         log.info("Lock released",
@@ -126,7 +126,7 @@ def process_account_unlock(data):
                  operation_name="unlock",
                  operation_number=operation_number.counter,
                  thread_name=current_thread().name)
-        return {"data": 1}
+        return {"error": 0}
     except RuntimeError:
         log.error("Lock already released",
                   business_id=business_id,
@@ -134,7 +134,7 @@ def process_account_unlock(data):
                   operation_name="unlock",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}
+        return {"error": -1}
 
 
 def process_account_lock(data):
@@ -152,7 +152,7 @@ def process_account_lock(data):
                   operation_name="lock",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}, 403
+        return {"error": -1}, 403
 
     if mutex.is_locked():
         log.error("Account is already locked",
@@ -161,7 +161,7 @@ def process_account_lock(data):
                   operation_name="lock",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}
+        return {"error": -1}
 
     locked = mutex.acquire()
     if locked:
@@ -171,7 +171,7 @@ def process_account_lock(data):
                   operation_name="lock",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": 1}
+        return {"error": 0}
     else:
         log.error("Account is already locked, timeout exceeded",
                   business_id=business_id,
@@ -179,7 +179,7 @@ def process_account_lock(data):
                   operation_name="lock",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}
+        return {"error": -1}
 
 @app.route("/balance/<int:business_id>/<int:account>", methods=("GET", "PUT"))
 @token_required
@@ -207,16 +207,18 @@ def get_balance(business_id, account):
                  operation_name="get_balance",
                  operation_number=operation_number.counter,
                  thread_name=current_thread().name)
-        return {"balance": balance}
+        return {
+            "balance": balance,
+            "error": 0
+        }
     else:
-        print(accounts)
         log.error("Account not found",
                  business_id=business_id,
                  account=account,
                  operation_name="get_balance",
                  operation_number=operation_number.counter,
                  thread_name=current_thread().name)
-        return {"data": -1}, 404
+        return {"error": -1}, 404
 
 def update_balance(business_id, account, amount):
     log.info("Updating account balance",
@@ -230,12 +232,11 @@ def update_balance(business_id, account, amount):
     if not mutex:
         log.error("Account is not locked by any server",
                   business_id=business_id,
-                  business_id_with_lock=mutex.business_id,
                   account=account,
                   operation_name="update_balance",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}, 403
+        return {"error": -1}, 403
 
     if mutex.business_id != business_id:
         log.error("Account is already locked by a differente business server",
@@ -245,7 +246,7 @@ def update_balance(business_id, account, amount):
                   operation_name="update_balance",
                   operation_number=operation_number.counter,
                   thread_name=current_thread().name)
-        return {"data": -1}, 403
+        return {"error": -1}, 403
 
     balance = accounts.get(account)
     if balance:
@@ -256,7 +257,7 @@ def update_balance(business_id, account, amount):
                  operation_name="update_balance",
                  operation_number=operation_number.counter,
                  thread_name=current_thread().name)
-        return {"data": 1}
+        return {"error": 0}
     else:
         log.error("Account not found",
                  business_id=business_id,
@@ -264,7 +265,7 @@ def update_balance(business_id, account, amount):
                  operation_name="update_balance",
                  operation_number=operation_number.counter,
                  thread_name=current_thread().name)
-        return {"data": -1}, 404
+        return {"error": -1}, 404
 
 
 if __name__ == "__main__":
