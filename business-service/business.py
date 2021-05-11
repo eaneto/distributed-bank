@@ -423,7 +423,7 @@ def process_operations_queue():
     queue_size = operations_queue.size()
     # If there are less than five messages just ignore and
     # sleep for one second.
-    if queue_size != 5:
+    if queue_size < 5:
         log.info("Queue not filled yet",
                  queue_size=queue_size,
                  operation_name="background_operation_processor",
