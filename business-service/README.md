@@ -10,7 +10,7 @@ expôr a API de operações do banco. As possíveis operações são:
 
 ## Arquitetura Geral
 
-![Visão Geral da Arquitetura](../docs/diagrama-visao-geral.png)
+![Diagrama da Arquitetura](../docs/ServidorDeNegocio.png)
 
 ## Consulta de saldo
 
