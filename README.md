@@ -15,6 +15,8 @@ source .venv/bin/activate
 
 ## Componentes
 
+![Visão Geral da Arquitetura](./docs/diagrama-visao-geral.png)
+
 ### Data Service (Serviço de Dados)
 
 ### Business Service (Serviço de Negócios)
