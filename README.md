@@ -20,7 +20,14 @@ pip install -r requirements.txt
 
 ### Data Service (Serviço de Dados)
 
+Serviço responsável por gerenciar os dados das contas bancárias. Pela
+sua api é possível obter lock de contas, consultar e atualizar o saldo
+de contas.
+
 ### Business Service (Serviço de Negócios)
+
+Serviço responsável por implementar as regras de negócio do banco e
+expôr a API de operações do banco, como saque e depósito.
 
 ## Testes
 
