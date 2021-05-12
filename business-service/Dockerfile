@@ -10,4 +10,4 @@ EXPOSE 5000
 
 WORKDIR /
 
-ENTRYPOINT ["flask", "run", "--host", "0.0.0.0"]
+ENTRYPOINT ["python", "/app.py"]

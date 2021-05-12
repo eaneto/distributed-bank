@@ -514,4 +514,12 @@ if __name__ == "__main__":
     )
     # Initialize the background job for the operations queue.
     consumer_thread.start()
-    app.run(port=5001)
+    # If any id is set then the app is running publicly on the
+    # network.
+    if os.environ["BUSINESS_ID"]:
+        app.run(
+            port=5000,
+            host="0.0.0.0"
+        )
+    else:
+        app.run(port=5001)
