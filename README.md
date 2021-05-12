@@ -24,6 +24,8 @@ source .venv/bin/activate
 Para rodar todos os testes de integração é apenas necessário executar
 o seguinte comando no shell.
 
+> Importante rodar esse script sem ter nenhum dos serviços rodando
+
 ```bash
 ./run_integration_tests.sh
 ```
