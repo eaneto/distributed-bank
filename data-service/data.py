@@ -84,7 +84,6 @@ def lock_route():
 
     # Check if the payload is empty
     if not request.json:
-        # TODO Fix payload response
         log.error("Empty payload",
                   thread_name=current_thread().name,
                   operation_number=operation_number.counter)
@@ -98,7 +97,6 @@ def lock_route():
 
 
 def process_account_unlock(data):
-    # TODO Validate business id
     business_id = int(data["business_id"])
     account = int(data["account"])
     log.info("Releasing lock",
@@ -140,7 +138,6 @@ def process_account_unlock(data):
 
 
 def process_account_lock(data):
-    # TODO Validate business id
     business_id = int(data["business_id"])
     account = int(data["account"])
 
