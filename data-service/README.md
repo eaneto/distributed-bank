@@ -3,10 +3,10 @@
 Serviço responsável por armazenar e administrar o acesso aos dados do
 usuário pelo mecanismo de exclusão mútua. As possíveis operações sao:
 
-- Consulta de dados
+- Consulta de Saldo
 - Lock dos dados(para escrita)
 
-## Rota de Lock
+## Rota de operações de Lock
 
 ### URI
 
@@ -15,14 +15,25 @@ usuário pelo mecanismo de exclusão mútua. As possíveis operações sao:
 ```
 
 
-### Rodando o curl local
+### Rodando o curl local para lock
 
 ```bash
-curl -iX PUT -H -H 'Authorization: Basic super-valid-token' \
+    curl -iX PUT -H 'Content-Type: application/json' \
+    -H 'Authorization: Basic super-valid-token' \
+    -d '{"business_id": 1, "account": 2}' \
     http://127.0.0.1:5001/lock
 ```
 
-## Consulta de dados
+### Rodando o curl local para unlock
+```
+curl -iX DELETE -H 'Content-Type: application/json' \
+    -H 'Authorization: Basic super-valid-token' \
+    -d '{"business_id": 1, "account": 2}' \
+    http://127.0.0.1:5001/lock
+```
+
+
+## Consulta de Saldo
 
 ### URI
 
