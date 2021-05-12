@@ -1,18 +1,29 @@
 # distributed-bank
 
-## Adquirir lock para a conta
+Serviço simplificado de um Banco distribuído.
+
+O Serviço é escrito em python com a principal dependência sendo o
+Flask. Para subir a aplicação local você precisa ter o python 3
+instalado. Com ele instalado siga o passo abaixo para instalar todas
+as dependências sem gerar conflitos com as dependências da sua
+máquina.
 
 ```bash
-curl -iX PUT -d '{"id_negoc": 123, "conta": 1}' -H 'Content-Type: application/json' http://127.0.0.1:5000/lock
-
-curl -iX PUT -d '{"id_negoc": 1234, "conta": 1}' \
-    -H 'Content-Type: application/json' \
-    -H 'Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMSJ9.UbKAsZGwbMcFBGMVXhAfg4WL4Lac-nhVZ4jegPtNlW0' \
-    http://127.0.0.1:5000/lock
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-## Liberando o lock
+## Componentes
+
+### Data Service (Serviço de Dados)
+
+### Business Service (Serviço de Negócios)
+
+## Testes
+
+Para rodar todos os testes de integração é apenas necessário executar
+o seguinte comando no shell.
 
 ```bash
-curl -iX DELETE -d '{"id_negoc": 123, "conta": 1}' -H 'Content-Type: application/json' http://127.0.0.1:5000/lock
+./run_integration_tests.sh
 ```
