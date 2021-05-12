@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  data:
+    container_name: data-service
+    build: ./data-service
+    ports:
+      - 5000
+
+  business1:
+    container_name: business1
+    build: ./business-service
+    environment:
+      - BUSINESS_ID=1
+      - DATA_URL=http://data:5000
+      - TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMSJ9.UbKAsZGwbMcFBGMVXhAfg4WL4Lac-nhVZ4jegPtNlW0
+    ports:
+      - 5000
+
+  business2:
+    container_name: business2
+    build: ./business-service
+    environment:
+      - BUSINESS_ID=2
+      - DATA_URL=http://data:5000
+      - TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMiJ9.kzo-UvtHH9E1NhX12W11nMrK2lkJ0OkREd_c1RIgkgU
+    ports:
+      - 5000
+
+  business3:
+    container_name: business3
+    build: ./business-service
+    environment:
+      - BUSINESS_ID=3
+      - DATA_URL=http://data:5000
+      - TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMyJ9.MxBz8eYS-HDI9PvSoCOXmtgUXoKs5PA4_JyZXvD8oQw
+    ports:
+      - 5000
+

@@ -4,7 +4,7 @@ COPY ./requirements.txt /requirements.txt
 
 RUN pip install -r /requirements.txt
 
-COPY data.py /app.py
+COPY business.py /app.py
 
 EXPOSE 5000
 

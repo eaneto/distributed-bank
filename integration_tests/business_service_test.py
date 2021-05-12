@@ -4,6 +4,7 @@ import requests
 
 VALID_TOKEN = "super-valid-token"
 INVALID_TOKEN = "super-invalid-token"
+APP_URL = "http://localhost:5001"
 
 
 def test_get_balance_with_valid_token():
@@ -12,7 +13,7 @@ def test_get_balance_with_valid_token():
         "Content-Type": "application/json",
         "Authorization": "Basic " + VALID_TOKEN
     }
-    response = requests.get("http://localhost:5001/balance/{}".format(account),
+    response = requests.get("{}/balance/{}".format(APP_URL, account),
         headers=headers)
 
     assert response.status_code == 200
@@ -24,7 +25,7 @@ def test_get_balance_with_invalid_token():
         "Content-Type": "application/json",
         "Authorization": "Basic " + INVALID_TOKEN
     }
-    response = requests.get("http://localhost:5001/balance/{}".format(account),
+    response = requests.get("{}/balance/{}".format(APP_URL, account),
         headers=headers)
 
     assert response.status_code == 401
@@ -38,13 +39,13 @@ def test_deposit_account_with_valid_token():
     }
 
     response = requests.post(
-        "http://localhost:5001/deposit/{}/{}".format(account, amount),
+        "{}/deposit/{}/{}".format(APP_URL, account, amount),
         headers=headers
     )
 
     assert response.status_code == 200
 
-    response = requests.get("http://localhost:5001/balance/{}".format(account),
+    response = requests.get("{}/balance/{}".format(APP_URL, account),
         headers=headers)
 
     assert response.status_code == 200
@@ -60,13 +61,13 @@ def test_withdraw_account_with_valid_token():
     }
 
     response = requests.post(
-        "http://localhost:5001/withdraw/{}/{}".format(account, amount),
+        "{}/withdraw/{}/{}".format(APP_URL, account, amount),
         headers=headers
     )
 
     assert response.status_code == 200
 
-    response = requests.get("http://localhost:5001/balance/{}".format(account),
+    response = requests.get("{}/balance/{}".format(APP_URL, account),
         headers=headers)
 
     assert response.status_code == 200
@@ -83,23 +84,23 @@ def test_transfer_between_accounts_with_valid_token():
     }
 
     response = requests.post(
-        "http://localhost:5001/transfer/{}/{}/{}".format(
-            debit_account, credit_account, amount
+        "{}/transfer/{}/{}/{}".format(
+            APP_URL, debit_account, credit_account, amount
         ),
         headers=headers
     )
 
     assert response.status_code == 200
 
-    response = requests.get("http://localhost:5001/balance/{}".format(
-        debit_account),
+    response = requests.get("{}/balance/{}".format(
+        APP_URL, debit_account),
         headers=headers)
 
     assert response.status_code == 200
     assert response.json()["balance"] == 1000
 
-    response = requests.get("http://localhost:5001/balance/{}".format(
-        credit_account),
+    response = requests.get("{}/balance/{}".format(
+        APP_URL, credit_account),
         headers=headers)
 
     assert response.status_code == 200
