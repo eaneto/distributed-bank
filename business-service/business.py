@@ -73,10 +73,16 @@ def get_env_or_default(env_key: str, default) -> str:
 
 
 class ThreadSafeQueue:
-    """Class that implements a safe thread queue for lock
-       attributes:
-          lock  -> represents the lock for all threads.
-          queue -> queue to store and process the client requests"""
+    """Class that implements a safe thread queue for lock.
+
+    Attributtes
+    ===========
+    lock : Lock
+    Represents the lock for all threads.
+
+    queue : List
+    Queue to store and process the client requests
+    """
 
     def __init__(self):
         self.lock = Lock()
@@ -84,7 +90,8 @@ class ThreadSafeQueue:
 
     def push(self, element):
         """Push the received request inside the queue, after that during the
-           process, it acquire the lock and at the end release it.
+        process, it acquire the lock and at the end release it.
+
         """
         self.lock.acquire(timeout=10)
         self.queue.append(element)
@@ -92,7 +99,8 @@ class ThreadSafeQueue:
 
     def pop(self):
         """Remove one request from the queue during the process, it acquire
-           process, it acquire the lock and at the end release it.
+        process, it acquire the lock and at the end release it.
+
         """
         self.lock.acquire(timeout=10)
         element = self.queue.pop()
@@ -234,10 +242,16 @@ def balance_route(account: int):
 @app.route("/deposit/<int:account>/<float:amount>", methods=["POST"])
 @token_required
 def deposit_route(account: int, amount: float):
-    """ Endpoint for deposit process request
-        require the current parameters:
-        account -> account for the deposit
-        amount -> the value for deposit it"""
+    """Endpoint for deposit process request
+
+    Parameters
+    ===========
+    account : int
+    Account for the deposit.
+
+    amount : float
+    The value for deposit it.
+    """
 
     operation_number.increment()
     log.info("Publishing deposit to operations queue",
@@ -260,10 +274,16 @@ def deposit_route(account: int, amount: float):
 @app.route("/withdraw/<int:account>/<float:amount>", methods=["POST"])
 @token_required
 def withdraw_route(account: int, amount: float):
-    """ Endpoint for withdraw process request
-        require the current parameters:
-        account -> account for the withdraw
-        amount -> the value for withdraw it"""
+    """Endpoint for withdraw process request.
+
+    Parameters
+    ==========
+    account : int
+    Account for the withdraw.
+
+    amount : float
+    The value for withdraw it.
+    """
 
     operation_number.increment()
     log.info("Publishing withdraw to operations queue",
@@ -287,11 +307,19 @@ def withdraw_route(account: int, amount: float):
            methods=["POST"])
 @token_required
 def transfer_route(debit_account: int, credit_account: int, amount: float):
-    """ Endpoint for transfer process request
-        require the current parameters:
-        debit_account -> account for the debit
-        credit_account -> account for the credit
-        amount -> the value for transfer it"""
+    """Endpoint for transfer process request.
+
+    Parameters
+    ==========
+    debit_account : int
+    Account for the debit.
+
+    credit_account : int
+    Account for the credit.
+
+    amount : float
+    The value for transfer it.
+    """
 
     operation_number.increment()
     log.info("Publishing transfer to operations queue",
@@ -313,7 +341,16 @@ def transfer_route(debit_account: int, credit_account: int, amount: float):
     return {}, 200
 
 def deposit(account: int, amount: float):
-    """Deposit Process """
+    """Process a deposit.
+
+    Parameters
+    ===========
+    account : int
+    Account for the deposit.
+
+    amount : float
+    The value for deposit it.
+    """
     log.info("Initiating deposit",
              business_id=client.business_id,
              account=account,
@@ -341,7 +378,16 @@ def deposit(account: int, amount: float):
 
 
 def withdraw(account: int, amount:float):
-    """Withdraw process"""
+    """Process a withdraw.
+
+    Parameters
+    ==========
+    account : int
+    Account for the withdraw.
+
+    amount : float
+    The value for withdraw it.
+    """
     log.info("Initiating withdraw",
              business_id=client.business_id,
              account=account,
@@ -369,7 +415,19 @@ def withdraw(account: int, amount:float):
              thread_name=current_thread().name)
 
 def transfer(debit_account: int, credit_account: int, amount: float):
-    """Transfer process"""
+    """Process a transfer between two accounts.
+
+    Parameters
+    ==========
+    debit_account : int
+    Account for the debit.
+
+    credit_account : int
+    Account for the credit.
+
+    amount : float
+    The value for transfer it.
+    """
     log.info("Initiating transfer",
              business_id=client.business_id,
              debit_account=debit_account,
