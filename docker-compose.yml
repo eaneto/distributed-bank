@@ -37,3 +37,32 @@ services:
     ports:
       - 5000
 
+  client1:
+    container_name: client1
+    build: ./client
+    depends_on:
+      - business1
+      - business2
+      - business3
+    environment:
+      - BUSINESS_URLS=http://business1:5000,http://business2:5000,http://business3:5000
+
+  client2:
+    container_name: client2
+    build: ./client
+    depends_on:
+      - business1
+      - business2
+      - business3
+    environment:
+      - BUSINESS_URLS=http://business1:5000,http://business2:5000,http://business3:5000
+
+  client3:
+    container_name: client3
+    build: ./client
+    depends_on:
+      - business1
+      - business2
+      - business3
+    environment:
+      - BUSINESS_URLS=http://business1:5000,http://business2:5000,http://business3:5000

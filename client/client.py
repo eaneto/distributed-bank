@@ -74,6 +74,11 @@ class BusinessServiceClient:
                       thread_name=current_thread().name)
             raise Exception("Error requesting account balance")
 
+        log.info("Successful business service call",
+                 http_status=response.status_code,
+                 account=account,
+                 operation_name="fetch_balance",
+                 thread_name=current_thread().name)
         return response.json()
 
     def deposit(self, account: int, amount: float):
@@ -101,9 +106,16 @@ class BusinessServiceClient:
                       http_status=response.status_code,
                       response_body=response.text,
                       account=account,
+                      amount=amount,
                       operation_name="deposit",
                       thread_name=current_thread().name)
             raise Exception("Error sending deposit request")
+
+        log.info("Successful business service call",
+                 account=account,
+                 amount=amount,
+                 operation_name="deposit",
+                 thread_name=current_thread().name)
 
     def withdraw(self, account: int, amount: float):
         """Request a withdraw to the business service.
@@ -130,9 +142,16 @@ class BusinessServiceClient:
                       http_status=response.status_code,
                       response_body=response.text,
                       account=account,
+                      amount=amount,
                       operation_name="withdraw",
                       thread_name=current_thread().name)
             raise Exception("Error sending withdraw request")
+
+        log.info("Successful business service call",
+                 account=account,
+                 amount=amount,
+                 operation_name="withdraw",
+                 thread_name=current_thread().name)
 
     def transfer(self, debit_account: int, credit_account: int, amount: float):
         """Request a transfer to the business service.
@@ -163,10 +182,18 @@ class BusinessServiceClient:
             log.error("Error on business service call",
                       http_status=response.status_code,
                       response_body=response.text,
-                      account=account,
+                      debit_account=debit_account,
+                      credit_account=credit_account,
                       operation_name="transfer",
                       thread_name=current_thread().name)
             raise Exception("Error sending transfer request")
+
+        log.info("Successful business service call",
+                 debit_account=debit_account,
+                 credit_account=credit_account,
+                 amount=amount,
+                 operation_name="transfer",
+                 thread_name=current_thread().name)
 
 
 class BusinessServiceRouter:
