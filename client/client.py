@@ -201,6 +201,7 @@ router = BusinessServiceRouter()
 while True:
     account = get_random_account()
     client = router.get_random_client()
+    # TODO Call random operation
     balance = client.fetch_balance(account)
     print(balance)
     time.sleep(.5)
