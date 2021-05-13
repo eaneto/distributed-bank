@@ -8,7 +8,7 @@ flask run &
 
 sleep 1
 
-pytest integration_tests/data_service_test.py
+pytest integration-tests/data_service_test.py
 
 # Destroy data service instance
 killall flask
@@ -22,7 +22,7 @@ business_pid=$!
 
 sleep 1
 
-pytest integration_tests/business_service_test.py
+pytest integration-tests/business_service_test.py
 
 # Destroy service instances
 kill -9 $data_pid
@@ -37,7 +37,7 @@ business_pid=$!
 
 sleep 1
 
-pytest integration_tests/business_service_test_with_multiple_operations.py
+pytest integration-tests/business_service_test_with_multiple_operations.py
 
 # Destroy service instances
 kill -9 $data_pid

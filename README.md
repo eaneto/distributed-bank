@@ -38,5 +38,5 @@ o seguinte comando no shell.
 > que esse script sobe e derruba os serviços pra cada teste.
 
 ```bash
-./run_integration_tests.sh
+./run_integration-tests.sh
 ```
