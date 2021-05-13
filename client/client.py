@@ -5,7 +5,7 @@ import logging
 import requests
 
 from threading import current_thread
-from random import randint
+from random import randint, random, choice
 
 from structlog import get_logger, configure
 from structlog.stdlib import LoggerFactory
@@ -13,7 +13,7 @@ from structlog.stdlib import LoggerFactory
 logging.basicConfig(
     filename='client.log',
     encoding='utf-8',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 configure(logger_factory=LoggerFactory())
@@ -92,7 +92,7 @@ class BusinessServiceClient:
         Exception when the service call fails.
         """
         response = requests.post(
-            "{}/deposit/{}/{}".format(self.url, deposit_account, amount),
+            "{}/deposit/{}/{}".format(self.url, account, amount),
             headers=self.headers
         )
 
@@ -121,7 +121,7 @@ class BusinessServiceClient:
         Exception when the service call fails.
         """
         response = requests.post(
-            "{}/withdraw/{}/{}".format(self.url, deposit_account, amount),
+            "{}/withdraw/{}/{}".format(self.url, account, amount),
             headers=self.headers
         )
 
@@ -170,6 +170,16 @@ class BusinessServiceClient:
 
 
 class BusinessServiceRouter:
+    """The business service router creates a internal client for each
+    business URL provided.
+
+    The idea is to get a random client for each operation that the
+    client will do.
+
+    So basically the client will only instantiate a router and access
+    the clients from it.
+
+    """
     def __init__(self):
         business_urls = os.environ.get("BUSINESS_URLS")
         if business_urls:
@@ -190,19 +200,82 @@ class BusinessServiceRouter:
             self.clients.append(client)
 
     def get_random_client(self):
+        """Selects a random client from the instantiated client."""
         idx = randint(0, len(self.clients) - 1)
         return self.clients[idx]
 
-def get_random_account():
-    return randint(1, 10)
+# All possible operations a client can call
+operations = [
+    "fetch_balance", "deposit", "withdraw", "transfer"
+]
 
 router = BusinessServiceRouter()
 
-while True:
-    account = get_random_account()
+
+def get_random_account() -> int:
+    """Get a random account to be operated."""
+    return randint(1, 10)
+
+
+def get_random_account_excluding(account: int) -> int:
+    """Get a random account excluding a specific one."""
+    return choice([i for i in range(1, 10) if i not in [account]])
+
+
+def get_random_amount() -> float:
+    """Generate a random value for the operation amount."""
+    return random() * 100
+
+
+def generate_random_operation():
+    """Generates a random operation on the business service."""
+    # Selects a random operation
+    operations_id = randint(0, len(operations) - 1)
+    operation = operations[operations_id]
+    # Get a client from the router
     client = router.get_random_client()
-    # TODO Call random operation
-    balance = client.fetch_balance(account)
-    print(balance)
-    time.sleep(.5)
+    # Processes a fetch balance operation
+    if operation == "fetch_balance":
+        account = get_random_account()
+        balance = client.fetch_balance(account)
+        log.info("Processing balance fetching",
+                 account=account)
+    # Processes a deposit operation
+    elif operation == "deposit":
+        account = get_random_account()
+        amount = get_random_amount()
+        log.info("Processing deposit",
+                 account=account,
+                 amount=amount)
+        client.deposit(account, amount)
+    # Processes a withdraw operation
+    elif operation == "withdraw":
+        account = get_random_account()
+        amount = get_random_amount()
+        log.info("Processing withdraw",
+                 account=account,
+                 amount=amount)
+        client.withdraw(account, amount)
+    # Processes a transfer operation
+    else:
+        debit_account = get_random_account()
+        credit_account = get_random_account_excluding(debit_account)
+        amount = get_random_amount()
+        log.info("Processing transfer",
+                 debit_account=debit_account,
+                 credit_account=credit_account,
+                 amount=amount)
+        client.transfer(debit_account, credit_account, amount)
+
+
+# Infinite loop that generates multiple and random operations to the
+# business services configured.
+while True:
+    try:
+        generate_random_operation()
+        # Wait for .1 second
+        time.sleep(.1)
+    except Exception as e:
+        log.error(e)
+        time.sleep(1)
 
