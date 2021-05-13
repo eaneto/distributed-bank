@@ -3,7 +3,7 @@ import time
 
 import requests
 
-VALID_TOKEN = "super-valid-token"
+VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTEifQ.J4rxFfc7zCJTCxys49JxN1lWCHVfZLlMj5EauhYJ4-k"
 APP_URL = "http://localhost:5001"
 
 def test_transfer_between_accounts_with_valid_token():

@@ -34,9 +34,11 @@ class ThreadSafeCounter:
 
 
 TOKENS = {
-    "Basic super-valid-token": "client-1",
-    "": "client-2",
-    "": "client-3"
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTEifQ.J4rxFfc7zCJTCxys49JxN1lWCHVfZLlMj5EauhYJ4-k": "client-1",
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTIifQ.TmlkAOWKWUMl6iNDPjrYxiQSP3_4BcQQiB1Ttc1ZR6w": "client-2",
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTMifQ.CnszkSIg7P2-co-8ZKIVvFyslptPRJ8sAFMQ5vrmRnI": "client-3",
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTQifQ.mrqSvmm-Y_uwx3hvg7XLoPXl9MFd4Hi9Exke8HD1Tl0": "client-4",
+    "Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTUifQ.V_0GT-xc_QlHicYc0olQFbdEHJ5yALOfR0wcCy81NM0": "client-5"
 }
 
 
@@ -516,7 +518,7 @@ if __name__ == "__main__":
     consumer_thread.start()
     # If any id is set then the app is running publicly on the
     # network.
-    if os.environ["BUSINESS_ID"]:
+    if os.environ.get("BUSINESS_ID"):
         app.run(
             port=5000,
             host="0.0.0.0"
