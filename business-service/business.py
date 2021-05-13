@@ -472,7 +472,13 @@ def queue_consumer():
 
     """
     while True:
-        process_operations_queue()
+        try:
+            process_operations_queue()
+        except Exception as e:
+            # Catch every error and just log it, if the exception is
+            # catch here the consumer thread will die on the first
+            # error.
+            log.error(e)
 
 
 def process_operations_queue():
