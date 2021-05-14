@@ -49,3 +49,9 @@ o seguinte comando no shell.
 
 ## Rodando os serviços com o docker
 
+Para subir o projeto com o docker compose, subindo containers para o
+servidor de dados, negócio e os clientes.
+
+```bash
+docker-compose up -d
+```
