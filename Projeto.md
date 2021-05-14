@@ -47,6 +47,9 @@ estabilidade de serviço de dados em sua própria requisição.
 - As operações não são atômicas, então em casos como o de
   transferência é possível ter contas com saldo em estado
   inconsistente
+- O uso de locks de contas poderia ser otimizado se as operações da
+  fila fossem agrupadas por conta para realizar o lock apenas uma fez
+  e consolidar as entradas e saídas em uma chamada só.
 
 ### Serviço de dados
 
