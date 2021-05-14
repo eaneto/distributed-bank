@@ -15,7 +15,7 @@ solicitando operações diferentes para os servidores de negócio. Ele
 recebe uma lista com todos os servidores de negócio e realiza chamadas
 de operações aleatórias para um servidor aleatório. Ele funcionou bem
 em todos os cenários de teste, com uma instância do servidor de
-negócios ou N instañcias, como é o caso quando a aplicação sobe com o
+negócios ou N instacias, como é o caso quando a aplicação sobe com o
 docker.
 
 ### Serviço de negócio
