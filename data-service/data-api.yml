@@ -28,6 +28,10 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/LockRequest"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
       responses:
         "200":
           description: "Lock realizado com sucesso"
@@ -57,6 +61,10 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/LockRequest"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
       responses:
         "200":
           description: "Unlock realizado com sucesso"
@@ -72,6 +80,41 @@ paths:
             $ref: '#/definitions/ApiResponse'
 
   /balance/{business_id}/{account}:
+    get:
+      tags:
+      - "balance"
+      summary: "Retorna o saldo de uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "business_id"
+        description: "O id do servidor de negócio"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "account"
+        description: "O id da conta"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "Saldo retornado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/BalanceResponse'
     put:
       tags:
       - "balance"
@@ -100,6 +143,10 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/Amount"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
       responses:
         "200":
           description: "Saldo atualizado com sucesso"
@@ -113,37 +160,6 @@ paths:
           description: "Não autorizado, token inválido"
           schema:
             $ref: '#/definitions/ApiResponse'
-    get:
-      tags:
-      - "balance"
-      summary: "Retorna o saldo de uma conta"
-      description: ""
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "business_id"
-        description: "O id do servidor de negócio"
-        type: "integer"
-        required: true
-        format: "int64"
-      - in: "path"
-        name: "account"
-        description: "O id da conta"
-        type: "integer"
-        required: true
-        format: "int64"
-      responses:
-        "200":
-          description: "Saldo retornado com sucesso"
-          schema:
-            $ref: '#/definitions/ApiResponse'
-        "401":
-          description: "Não autorizado, token inválido"
-          schema:
-            $ref: '#/definitions/BalanceResponse'
 
 definitions:
   Amount:
