@@ -14,8 +14,41 @@ saldo, depósitos, saques e transferências.
 
 ### Serviço de negócio
 
-- Background job
-  - Desacoplamento com serviço de dados
+O serviço de negócio foi o que teve a implementação mais complexa. Já
+que ele tinha mais regras que envolviam realizar N chamadas para o
+serviço de dados e de forma assíncrona.
+
+A arquitetura do servidor de negócio segue uma arquitetura clássica de
+API e worker. Onde temos uma API que a única responsabilidade é enviar
+requisições de processamento para um worker por meio de uma estrutura
+como uma fila. Desse modo implementamos um background job, que nesse
+caso é simplesmente uma thread do mesmo programa, responsável por
+consumir de forma assíncrona essa fila e processar as requisições em
+micro batches de 5 mensagens.
+
+Tendo as funcionalidades das operações sendo executadas de forma
+assíncrona temos um ganho no desacoplamento entre o serviço de negócio
+e o serviço de dados. Se o serviço de negócio precisasse realizar as
+chamadas ao serviço de dados de forma síncrona significa que qualquer
+problema neste serviço refletiria diretamente para o cliente que está
+chamando a funcionalidade de negócio. Como a única responsabilidade da
+API é enviar a requisição para a fila, o cliente não precisa da
+estabilidade de serviço de dados em sua própria requisição.
+
+#### Problemas
+
+- Não há retentativa para as operações realizadas
+- As operações não são atômicas, então em casos como o de
+  transferência é possível ter contas com saldo em estado
+  inconsistente
 
 ### Serviço de dados
+
+
+#### Problemas
+
+- Não há transações ACID para as operações
+- Dados não são persistidos em disco
+- O lock é realizado de forma lógica pelo cliente ao invés de ser
+  gerenciado pelo próprio serviço
 

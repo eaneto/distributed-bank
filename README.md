@@ -1,5 +1,10 @@
 # distributed-bank
 
+| Nome                            | TIA      |
+| ------------------------------- | -------- |
+| Edison Aguiar de Souza Neto     | 31812295 |
+| Luiz Fernando Tagliaferro Brito |          |
+
 Serviço simplificado de um Banco distribuído.
 
 O Serviço é escrito em python com a principal dependência sendo o
