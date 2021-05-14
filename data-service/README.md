@@ -6,6 +6,13 @@ usuário pelo mecanismo de exclusão mútua. As possíveis operações sao:
 - Consulta e atualização de Saldo
 - Lock da conta(para escrita)
 
+## Definição da API com Swagger
+
+Para verificar a definição da API com o swagger acesse o site
+https://editor.swagger.io/ e carrege o conteúdo do arquivo
+`data-api.yml`.
+
+
 ## Lock
 
 ### URI

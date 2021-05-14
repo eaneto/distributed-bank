@@ -16,6 +16,12 @@ expôr a API de operações do banco. As possíveis operações são:
 
 ![Diagrama da Funcionalidade](../docs/Diagrams-ServidorDeNegocio-ConsultaDeSaldo.png)
 
+## Definição da API com Swagger
+
+Para verificar a definição da API com o swagger acesse o site
+https://editor.swagger.io/ e carrege o conteúdo do arquivo
+`business-api.yml`.
+
 ### URI
 
 ```
