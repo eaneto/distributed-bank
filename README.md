@@ -3,7 +3,7 @@
 | Nome                            | TIA      |
 | ------------------------------- | -------- |
 | Edison Aguiar de Souza Neto     | 31812295 |
-| Luiz Fernando Tagliaferro Brito |          |
+| Luiz Fernando Tagliaferro Brito | 31861806 |
 
 Serviço simplificado de um Banco distribuído.
 
