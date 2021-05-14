@@ -1,0 +1,180 @@
+swagger: "2.0"
+info:
+  description: "Serviço de dados"
+  version: "1.0"
+  title: "Data Service"
+tags:
+- name: "operation"
+  description: "Endpoints relacionados as operações de negócio"
+schemes:
+- "http"
+paths:
+  /balance/{account}:
+    get:
+      tags:
+      - "operation"
+      summary: "Retorna o saldo de uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "account"
+        description: "O id da conta"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "Saldo retornado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/BalanceResponse'
+
+  /deposit/{account}/{amount}:
+    post:
+      tags:
+      - "operation"
+      summary: "Solicita um depósito para uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "account"
+        description: "O id da conta"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "amount"
+        description: "Valor do depósito"
+        required: true
+        type: "number"
+        format: "float"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "Depósito solicitado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "500":
+          description: "Erro interno solicitando depósito"
+
+  /withdraw/{account}/{amount}:
+    post:
+      tags:
+      - "operation"
+      summary: "Solicita um saque para uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "account"
+        description: "O id da conta"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "amount"
+        description: "Valor do saque"
+        required: true
+        type: "number"
+        format: "float"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "Saque solicitado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "500":
+          description: "Erro interno solicitando saque"
+
+  /transfer/{debit_account}/{credit_account}/{amount}:
+    post:
+      tags:
+      - "operation"
+      summary: "Solicita uma transferência entre contas"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "debit_account"
+        description: "O id da conta de débito"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "credit_account"
+        description: "O id da conta de crédito"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "amount"
+        description: "Valor da transferência"
+        required: true
+        type: "number"
+        format: "float"
+      - in: "header"
+        name: "Authorization"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "Transferência solicitada com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "500":
+          description: "Erro interno solicitando transferência"
+definitions:
+  ApiResponse:
+    type: "object"
+    properties:
+      error:
+        type: "integer"
+        format: "int32"
+  BalanceResponse:
+    type: "object"
+    properties:
+      error:
+        type: "integer"
+        format: "int32"
+      balance:
+        type: "number"
+        format: "float"
