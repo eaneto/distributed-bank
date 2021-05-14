@@ -29,6 +29,12 @@ de contas.
 Serviço responsável por implementar as regras de negócio do banco e
 expôr a API de operações do banco, como saque e depósito.
 
+### Client
+
+O client é um script simples que roda operações aleatórias em contas
+aleatórias com valores aleatórias para gerar uma carga 100% aleatória
+nos serviços.
+
 ## Testes
 
 Para rodar todos os testes de integração é apenas necessário executar
@@ -40,3 +46,6 @@ o seguinte comando no shell.
 ```bash
 ./run_integration-tests.sh
 ```
+
+## Rodando os serviços com o docker
+
