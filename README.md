@@ -60,3 +60,13 @@ servidor de dados, negócio e os clientes.
 ```bash
 docker-compose up -d
 ```
+
+Para visualizar o log das operações ocorrendo nos servidores de
+negócios. São iniciados 3 containers do servidor de negócio, portanto
+escolha um deles para visualizar os logs.
+
+**Exemplo:**
+
+```bash
+docker exec -it business1 tail -f /business.log
+```

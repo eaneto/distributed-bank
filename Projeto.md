@@ -10,7 +10,13 @@ saldo, depósitos, saques e transferências.
 
 ### Cliente
 
-
+Esse programa é responsável por simular o comportamento de um cliente,
+solicitando operações diferentes para os servidores de negócio. Ele
+recebe uma lista com todos os servidores de negócio e realiza chamadas
+de operações aleatórias para um servidor aleatório. Ele funcionou bem
+em todos os cenários de teste, com uma instância do servidor de
+negócios ou N instañcias, como é o caso quando a aplicação sobe com o
+docker.
 
 ### Serviço de negócio
 
@@ -44,6 +50,13 @@ estabilidade de serviço de dados em sua própria requisição.
 
 ### Serviço de dados
 
+O serviço de dados é o serviço responsável por gerenciar todo direto
+aos dados das contas. Por ele é possível atualizar e consultar o saldo
+de uma conta e também obter e liberar o lock para uma conta. Todo lock
+está atrelado a um serviço de negócio, esses serviços sempre enviam
+seu id e o id da conta a ser lockada. Quando o saldo é atualizado esse
+lock é validado, o servidor de negócio só pode atualizar o saldo da
+conta se ele é o "dono" do lock.
 
 #### Problemas
 
