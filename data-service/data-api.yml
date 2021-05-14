@@ -1,0 +1,183 @@
+swagger: "2.0"
+info:
+  description: "Serviço de dados"
+  version: "1.0"
+  title: "Data Service"
+tags:
+- name: "lock"
+  description: "Endpoints relacionados ao lock"
+- name: "balance"
+  description: "Endpoints relacionados ao saldo"
+schemes:
+- "http"
+paths:
+  /lock:
+    put:
+      tags:
+      - "lock"
+      summary: "Realiza o lock de uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "As informações da servidor de negócio e da conta"
+        required: true
+        schema:
+          $ref: "#/definitions/LockRequest"
+      responses:
+        "200":
+          description: "Lock realizado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "403":
+          description: "Servidor de negócio não pode realizar o lock por que a conta já está lockada"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+    delete:
+      tags:
+      - "lock"
+      summary: "Realiza o unlock de uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "As informações da servidor de negócio e da conta"
+        required: true
+        schema:
+          $ref: "#/definitions/LockRequest"
+      responses:
+        "200":
+          description: "Unlock realizado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "403":
+          description: "Servidor de negócio não pode realizar o unlock por que não fez o lock"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+  /balance/{business_id}/{account}:
+    put:
+      tags:
+      - "balance"
+      summary: "Atualiza o saldo de uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "business_id"
+        description: "O id do servidor de negócio"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "account"
+        description: "O id da conta"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Novo valor do saldo da conta"
+        required: true
+        schema:
+          $ref: "#/definitions/Amount"
+      responses:
+        "200":
+          description: "Saldo atualizado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "403":
+          description: "Servidor de negócio não pode realizar o atualizar o saldo por que a conta já está lockada por outro servidor ou não está lockada"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+    get:
+      tags:
+      - "balance"
+      summary: "Retorna o saldo de uma conta"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "business_id"
+        description: "O id do servidor de negócio"
+        type: "integer"
+        required: true
+        format: "int64"
+      - in: "path"
+        name: "account"
+        description: "O id da conta"
+        type: "integer"
+        required: true
+        format: "int64"
+      responses:
+        "200":
+          description: "Saldo retornado com sucesso"
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "401":
+          description: "Não autorizado, token inválido"
+          schema:
+            $ref: '#/definitions/BalanceResponse'
+
+definitions:
+  Amount:
+    type: "object"
+    required:
+    - "amount"
+    properties:
+      amount:
+        type: "number"
+        format: "float"
+  LockRequest:
+    type: "object"
+    required:
+    - "business_id"
+    - "account"
+    properties:
+      business_id:
+        type: "integer"
+        format: "int64"
+      account:
+        type: "integer"
+        format: "int64"
+  ApiResponse:
+    type: "object"
+    properties:
+      error:
+        type: "integer"
+        format: "int32"
+  BalanceResponse:
+    type: "object"
+    properties:
+      error:
+        type: "integer"
+        format: "int32"
+      balance:
+        type: "number"
+        format: "float"
