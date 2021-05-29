@@ -14,8 +14,10 @@ logging.basicConfig(
 
 configure(logger_factory=LoggerFactory())
 
+
 class ThreadSafeCounter:
     """A thread safe counter used to register the operation number."""
+
     def __init__(self):
         self.counter = 0
         self.lock = Lock()
@@ -31,6 +33,7 @@ class BusinessMutex:
     and a exclusive lock used for updating the user balance.
 
     """
+
     def __init__(self, business_id: int):
         self.business_id = business_id
         self.lock = Lock()
@@ -68,12 +71,14 @@ def token_required(f):
     valid token.
 
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Checks if the token is in the token list
         if request.headers.get("Authorization") not in TOKENS:
             return {"error": -1}, 401
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -165,11 +170,11 @@ def process_account_lock(data):
     locked = mutex.acquire()
     if locked:
         log.info("Lock acquired successfully",
-                  business_id=business_id,
-                  account=account,
-                  operation_name="lock",
-                  operation_number=operation_number.counter,
-                  thread_name=current_thread().name)
+                 business_id=business_id,
+                 account=account,
+                 operation_name="lock",
+                 operation_number=operation_number.counter,
+                 thread_name=current_thread().name)
         return {"error": 0}
     else:
         log.error("Account is already locked, timeout exceeded",
@@ -180,6 +185,7 @@ def process_account_lock(data):
                   thread_name=current_thread().name)
         return {"error": -1}
 
+
 @app.route("/balance/<int:business_id>/<int:account>", methods=("GET", "PUT"))
 @token_required
 def balance_route(business_id, account):
@@ -188,7 +194,8 @@ def balance_route(business_id, account):
         return get_balance(business_id, account)
     else:
         amount = float(request.json["valor"])
-        return update_balance(business_id, account,  amount)
+        return update_balance(business_id, account, amount)
+
 
 def get_balance(business_id, account):
     log.info("Fetching account balance",
@@ -212,12 +219,13 @@ def get_balance(business_id, account):
         }
     else:
         log.error("Account not found",
-                 business_id=business_id,
-                 account=account,
-                 operation_name="get_balance",
-                 operation_number=operation_number.counter,
-                 thread_name=current_thread().name)
+                  business_id=business_id,
+                  account=account,
+                  operation_name="get_balance",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
         return {"error": -1}, 404
+
 
 def update_balance(business_id, account, amount):
     log.info("Updating account balance",
@@ -259,11 +267,11 @@ def update_balance(business_id, account, amount):
         return {"error": 0}
     else:
         log.error("Account not found",
-                 business_id=business_id,
-                 account=account,
-                 operation_name="update_balance",
-                 operation_number=operation_number.counter,
-                 thread_name=current_thread().name)
+                  business_id=business_id,
+                  account=account,
+                  operation_name="update_balance",
+                  operation_number=operation_number.counter,
+                  thread_name=current_thread().name)
         return {"error": -1}, 404
 
 

@@ -12,7 +12,6 @@ from structlog.stdlib import LoggerFactory
 
 logging.basicConfig(
     filename='client.log',
-    encoding='utf-8',
     level=logging.INFO
 )
 
@@ -28,6 +27,7 @@ TOKENS = [
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY2xpZW50LTUifQ.V_0GT-xc_QlHicYc0olQFbdEHJ5yALOfR0wcCy81NM0"
 ]
 
+
 class BusinessServiceClient:
     """Stateless client for the business service.
 
@@ -36,6 +36,7 @@ class BusinessServiceClient:
     set in the constructor.
 
     """
+
     def __init__(self, url, token):
         self.url = url
         self.token = token
@@ -207,6 +208,7 @@ class BusinessServiceRouter:
     the clients from it.
 
     """
+
     def __init__(self):
         business_urls = os.environ.get("BUSINESS_URLS")
         if business_urls:
@@ -230,6 +232,7 @@ class BusinessServiceRouter:
         """Selects a random client from the instantiated client."""
         idx = randint(0, len(self.clients) - 1)
         return self.clients[idx]
+
 
 # All possible operations a client can call
 operations = [
@@ -305,4 +308,3 @@ while True:
     except Exception as e:
         log.error(e)
         time.sleep(1)
-

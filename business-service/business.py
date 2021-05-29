@@ -13,11 +13,11 @@ from structlog.stdlib import LoggerFactory
 
 logging.basicConfig(
     filename='business.log',
-    encoding='utf-8',
     level=logging.DEBUG
 )
 
 configure(logger_factory=LoggerFactory())
+
 
 class ThreadSafeCounter:
     """A thread safe counter used to register the operation number."""
@@ -47,16 +47,18 @@ def token_required(f):
     valid token.
 
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Checks if the token is in the token list
         if request.headers.get("Authorization") not in TOKENS:
             return {"data": -1}, 401
         return f(*args, **kwargs)
+
     return decorated_function
 
 
-#Variables for the application
+# Variables for the application
 app = Flask(__name__)
 log = get_logger()
 operation_number = ThreadSafeCounter()
@@ -77,7 +79,7 @@ def get_env_or_default(env_key: str, default) -> str:
 class ThreadSafeQueue:
     """Class that implements a safe thread queue for lock.
 
-    Attributtes
+    Attributes
     ===========
     lock : Lock
     Represents the lock for all threads.
@@ -122,10 +124,13 @@ class DataServiceClient:
     in the constructor.
 
     """
+
     def __init__(self):
         self.business_id = get_env_or_default("BUSINESS_ID", 1)
         self.url = get_env_or_default("DATA_URL", "http://localhost:5000")
-        self.token = get_env_or_default("TOKEN", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMSJ9.UbKAsZGwbMcFBGMVXhAfg4WL4Lac-nhVZ4jegPtNlW0")
+        self.token = get_env_or_default("TOKEN",
+                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYnVzaW5lc3MtMSJ9"
+                                        ".UbKAsZGwbMcFBGMVXhAfg4WL4Lac-nhVZ4jegPtNlW0")
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": "Basic " + self.token
@@ -208,7 +213,7 @@ class DataServiceClient:
                       business_id=self.business_id,
                       account=account,
                       operation_name="update_account_balance",
-                     operation_number=operation_number.counter,
+                      operation_number=operation_number.counter,
                       thread_name=current_thread().name)
             raise Exception("Error updating account balance")
 
@@ -218,6 +223,7 @@ client = DataServiceClient()
 
 # Queue used to store all operations
 operations_queue = ThreadSafeQueue()
+
 
 @app.route("/balance/<int:account>")
 @token_required
@@ -342,6 +348,7 @@ def transfer_route(debit_account: int, credit_account: int, amount: float):
 
     return {}, 200
 
+
 def deposit(account: int, amount: float):
     """Process a deposit.
 
@@ -379,7 +386,7 @@ def deposit(account: int, amount: float):
              thread_name=current_thread().name)
 
 
-def withdraw(account: int, amount:float):
+def withdraw(account: int, amount: float):
     """Process a withdraw.
 
     Parameters
@@ -415,6 +422,7 @@ def withdraw(account: int, amount:float):
              operation_name="withdraw",
              operation_number=operation_number.counter,
              thread_name=current_thread().name)
+
 
 def transfer(debit_account: int, credit_account: int, amount: float):
     """Process a transfer between two accounts.
@@ -514,6 +522,7 @@ def process_operations_queue():
                 operation["credit_account"],
                 operation["amount"]
             )
+
 
 if __name__ == "__main__":
     consumer_thread = Thread(
